@@ -1,0 +1,27 @@
+workflows:
+  hammer-ai-final-v6:
+    name: HAMMER AI Final V6
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      java: 17
+    scripts:
+      - name: Unpack HAMMER AI V6
+        script: |
+          rm -rf "$CM_BUILD_DIR/source"
+          mkdir -p "$CM_BUILD_DIR/source"
+          unzip -o "$CM_BUILD_DIR/HAMMER-AI-Final-v6-source.zip" -d "$CM_BUILD_DIR/source"
+      - name: Set Android SDK location
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/source/GamePilotAI/local.properties"
+      - name: Install Gradle 8.9
+        script: |
+          curl -L --fail --retry 3 -o /tmp/gradle-8.9-bin.zip https://services.gradle.org/distributions/gradle-8.9-bin.zip
+          rm -rf /tmp/gradle-8.9
+          unzip -q /tmp/gradle-8.9-bin.zip -d /tmp
+      - name: Build HAMMER AI V6 APK
+        script: |
+          cd "$CM_BUILD_DIR/source/GamePilotAI"
+          /tmp/gradle-8.9/bin/gradle --no-daemon clean assembleDebug
+    artifacts:
+      - source/GamePilotAI/app/build/outputs/apk/debug/*.apk
